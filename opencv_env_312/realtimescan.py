@@ -42,11 +42,18 @@ def btn_click():
                 cv2.waitKey(1)
                 continue
 
-            m = np.empty((4, 2))
-            corners2 = [np.empty((1, 4, 2))] * 4
+            corners2 = [None] * 4  # マーカーID 0～3 に対応
             for i, c in zip(ids.ravel(), corners):
-                corners2[i] = c.copy()
+                if 0 <= i <= 3:
+                    corners2[i] = c.copy()
 
+            if any(c is None for c in corners2):
+                print("ID 0〜3 のマーカーが揃っていません")
+                cv2.imshow('raw', img)
+                cv2.waitKey(1)
+                continue
+
+            m = np.empty((4, 2))
             m[0] = corners2[0][0][2]
             m[1] = corners2[1][0][3]
             m[2] = corners2[2][0][0]
@@ -89,7 +96,6 @@ def btn_click():
             cv2.putText(tmp, f"Angle: {angle:.1f} deg", (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 2)
             cv2.imshow('image', tmp)
 
-            # ---- CSV Log ----
             log.append([frame_count, x, y, angle])
 
             if cv2.waitKey(1) & 0xFF == ord("q"):
@@ -99,7 +105,6 @@ def btn_click():
         cap.release()
         cv2.destroyAllWindows()
 
-        # CSV保存
         csv_filename = "sashigane_angle_log.csv"
         with open(csv_filename, 'w', newline='') as f:
             writer = csv.writer(f)
@@ -121,7 +126,7 @@ txt_1.place(x=90, y=70)
 lbl_height = tk.Label(root, text='高さ')
 lbl_height.place(x=30, y=100)
 txt_2 = tk.Entry(root, width=20)
-txt_2.insert(0, "110")
+txt_2.insert(0, "145")
 txt_2.place(x=90, y=100)
 
 lbl_camera = tk.Label(root, text='カメラ番号')
